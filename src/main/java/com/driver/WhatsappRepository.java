@@ -46,20 +46,26 @@ public class WhatsappRepository {
             numberOfparticipants=2;
             groupsDb.put(groupName, users);
         }
-        int count =0;
-       for(List<User> userList:groupsDb.values())
+
+
+        else if (users.size()>2)
        {
-              int size = userList.size();
-              if(size > 2)
-                  count++;
+           int count =0;
+           for(List<User> userList:groupsDb.values())
+           {
+               int size = userList.size();
+               if(size > 2)
+                   count++;
+           }
+           int numberOfGroups =count+1;
+           groupName = "Group "+String.valueOf(numberOfGroups);
+           numberOfparticipants= users.size();
+           groupsDb.put(groupName,users);
+
        }
-       // else if (users.size()>2)
-      //  {
          // int numberOfGroups = groupsDb.size()+1;
-        int numberOfGroups =count+1;
-          groupName = "Group "+String.valueOf(numberOfGroups);
-          numberOfparticipants= users.size();
-          groupsDb.put(groupName,users);
+
+
 
     //    }
         Group group = new Group();
