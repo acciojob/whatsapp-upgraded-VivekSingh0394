@@ -4,10 +4,10 @@ import java.util.*;
 
 public class WhatsappRepository {
     HashMap<String,User> userDb = new HashMap<>();
-    HashMap<String,List<User>> groupsDb=new HashMap<>();
-    HashMap<String,List<Message>> usermsgDb = new HashMap<>();
+    HashMap<Group,List<User>> groupsDb=new HashMap<>();
+    HashMap<User,List<Message>> usermsgDb = new HashMap<>();
     List<Message> messagesDb = new ArrayList<>();
-    HashMap<String,List<Message>> groupMessageDb =new HashMap<>();
+    HashMap<Group,List<Message>> groupMessageDb =new HashMap<>();
     public String createUser(String name,String mobile) throws Exception {
         //If the mobile number exists in database, throw "User already exists" exception
         //Otherwise, create the user and return "SUCCESS"
@@ -39,14 +39,14 @@ public class WhatsappRepository {
         int numberOfparticipants=0;
         if(users.size()==2)
         {
-            groupName = users.get(1).getName();
-            numberOfparticipants=2;
-            groupsDb.put(groupName, users);
+
+            Group group = new Group();
+            group.setName(users.get(1).getName());
+            group.setNumberOfParticipants(2);
+            groupsDb.put(group,users);
+            return group;
         }
-
-
-        else if (users.size()>2)
-       {
+        Group group1 = new Group();
            int count =0;
            for(List<User> userList:groupsDb.values())
            {
@@ -57,18 +57,21 @@ public class WhatsappRepository {
            int numberOfGroups =count+1;
            groupName = "Group "+String.valueOf(numberOfGroups);
            numberOfparticipants= users.size();
-           groupsDb.put(groupName,users);
+           group1.setName(groupName);
+           group1.setNumberOfParticipants(numberOfparticipants);
+           groupsDb.put(group1,users);
+           return group1;
 
-       }
+
          // int numberOfGroups = groupsDb.size()+1;
 
 
 
     //    }
-        Group group = new Group();
-        group.setName(groupName);
-        group.setNumberOfParticipants(numberOfparticipants);
-        return group;
+//        Group group = new Group();
+//        group.setName(groupName);
+//        group.setNumberOfParticipants(numberOfparticipants);
+//        return group;
 
     }
     public int createMessage(String content) {
@@ -90,16 +93,16 @@ public class WhatsappRepository {
         //Throw "You are not allowed to send message" if the sender is not a member of the group
         //If the message is sent successfully, return the final number of messages in that group.
 
-        String groupName = group.getName();
-        if(!groupsDb.containsKey(groupName))
+       // String groupName = group.getName();
+        if(!groupsDb.containsKey(group))
         {
             throw new Exception("Group does not exist");
         }
-        List<User> userList = groupsDb.get(groupName);
+        List<User> userList = groupsDb.get(group);
         boolean check=false;
         for(User user : userList)
         {
-            if(user.getName().equals(sender.getName()))
+            if(user.equals(sender))
             {
                 check =true;
                 break;
@@ -110,36 +113,36 @@ public class WhatsappRepository {
             throw new Exception("You are not allowed to send message");
         }
     // update message list;
-        messagesDb.add(message);
+       // messagesDb.add(message);
       // update usermsgdb
-        if(usermsgDb.size()==0 || !usermsgDb.containsKey(sender.getName()))
+        if(usermsgDb.containsKey(sender))
         {
-            List<Message> messageList = new ArrayList<>();
-            messageList.add(message);
-            usermsgDb.put(sender.getName(),messageList);
+            usermsgDb.get(sender).add(message);
+//            List<Message> messageList = new ArrayList<>();
+//            messageList.add(message);
+//            usermsgDb.put(sender.getName(),messageList);
         }
         else {
 
-            List<Message> messageList = usermsgDb.get(sender.getName());
-            if (messageList == null)
-                messageList = new ArrayList<>();
+            List<Message> messageList = new ArrayList<>();
             messageList.add(message);
+            usermsgDb.put(sender,messageList);
         }
 
-       if(groupMessageDb.size()==0 || !groupMessageDb.containsKey(groupName))
+       if(groupMessageDb.containsKey(group))
        {
-           List<Message> messageList = new ArrayList<>();
-           messageList.add(message);
-           groupMessageDb.put(groupName,messageList);
+           groupMessageDb.get(group).add(message);
+          // List<Message> messageList = new ArrayList<>();
+          // messageList.add(message);
+          // groupMessageDb.put(groupName,messageList);
        }
        else {
-           List<Message> messageList = groupMessageDb.get(groupName);
-           if (messageList == null)
-               messageList = new ArrayList<>();
-           messageList.add(message);
+           List<Message> messageList =new ArrayList<>();
+            messageList.add(message);
+           groupMessageDb.put(group,messageList);
        }
 
-    int sizeofmessages = groupMessageDb.get(groupName).size();
+    int sizeofmessages = groupMessageDb.get(group).size();
         return sizeofmessages;
     }
     public String changeAdmin(User approver, User user, Group group) throws Exception{
@@ -149,22 +152,22 @@ public class WhatsappRepository {
         //Change the admin of the group to "user" and return "SUCCESS". Note that at one time there
         // is only one admin and the admin rights are transferred from approver to user.
 
-        String groupName = group.getName();
-        if(!groupsDb.containsKey(groupName))
+        //String groupName = group.getName();
+        if(!groupsDb.containsKey(group))
         {
             throw new Exception("Group does not exist");
         }
-        String approverName = approver.getName();
-        List<User> userList = groupsDb.get(groupName);
-        String adminName = userList.get(0).getName();
-        if(approverName.compareTo(adminName)!=0)
+        //String approverName = approver.getName();
+        List<User> userList = groupsDb.get(group);
+        User admin = userList.get(0);
+        if(!approver.equals(admin))
         {
             throw  new Exception("Approver does not have rights");
         }
         boolean check = false;
         for(User user1 : userList)
         {
-            if(user1.getName().equals(user.getName()))
+            if(user1.equals(user))
             {
                 check = true;
                 break;
@@ -274,8 +277,8 @@ public class WhatsappRepository {
         int groupSize = 0;
         int messageCount = 0;
         int overallMessageCount = messagesDb.size();
-        String groupToRemoveFrom = "";
-        for (Map.Entry<String, List<User>> entry : groupsDb.entrySet()) {
+        Group groupToRemoveFrom = null;
+        for (Map.Entry<Group, List<User>> entry : groupsDb.entrySet()) {
             List<User> userList = entry.getValue();
             if (userList.contains(user))
             {
