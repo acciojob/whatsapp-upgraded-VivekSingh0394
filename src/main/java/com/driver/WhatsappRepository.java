@@ -270,35 +270,35 @@ public class WhatsappRepository {
 //        {
 //           return 0;
 //        }
-        boolean userFound = false;
+        boolean check = false;
         int groupSize = 0;
         int messageCount = 0;
         int overallMessageCount = messagesDb.size();
         String groupToRemoveFrom = "";
         for (Map.Entry<String, List<User>> entry : groupsDb.entrySet()) {
-            List<User> groupUsers = entry.getValue();
-            if (groupUsers.contains(user))
+            List<User> userList = entry.getValue();
+            if (userList.contains(user))
             {
-                userFound = true;
+                check = true;
                 groupToRemoveFrom = entry.getKey();
-                if (groupUsers.get(0).equals(user))
+                if (userList.get(0).getName().equals(user.getName()))
                 {
                     throw new Exception("Cannot remove admin");
                 }
-                groupUsers.remove(user);
-                groupSize = groupUsers.size();
+                userList.remove(user);
+                groupSize = userList.size();
                 break;
             }
         }
-        if (!userFound)
+        if (check == false)
         {
             throw new Exception("User not found");
         }
 
-        if (usermsgDb.containsKey(user))
+        if (usermsgDb.containsKey(user.getName()))
         {
             messageCount = usermsgDb.get(user).size() - 2;
-            usermsgDb.remove(user);
+            usermsgDb.remove(user.getName());
         }
 
 
