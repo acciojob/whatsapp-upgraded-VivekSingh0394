@@ -249,7 +249,12 @@ public class WhatsappRepository {
                 }
             }
             int totalacount = 0;
-            totalacount += groupsDb.get(groupName).size() + groupMessageDb.get(groupName).size() + messagesDb.size();
+            totalacount += groupsDb.get(groupName).size() + groupMessageDb.get(groupName).size();
+            for(String grpname:groupMessageDb.keySet())
+            {
+               totalacount+= groupMessageDb.get(grpname).size();
+
+            }
             return totalacount;
         }
         catch (Exception e)
