@@ -284,7 +284,7 @@ public class WhatsappRepository {
             {
                 check = true;
                 groupToRemoveFrom = entry.getKey();
-                if (userList.get(0).getName().equals(user.getName()))
+                if (userList.get(0).equals(user))
                 {
                     throw new Exception("Cannot remove admin");
                 }
@@ -298,14 +298,14 @@ public class WhatsappRepository {
             throw new Exception("User not found");
         }
 
-        if (usermsgDb.containsKey(user.getName()))
+        if (usermsgDb.containsKey(user))
         {
             messageCount = usermsgDb.get(user).size() - 2;
-            usermsgDb.remove(user.getName());
+            usermsgDb.remove(user);
         }
 
 
-        return groupSize + messageCount + overallMessageCount-1;
+        return groupSize + messageCount + overallMessageCount;
     }
     public String findMessage(Date start, Date end, int K) throws Exception{
         // This is a bonus problem and does not contains any marks
