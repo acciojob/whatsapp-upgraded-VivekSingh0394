@@ -1,9 +1,6 @@
 package com.driver;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class WhatsappRepository {
     HashMap<String,User> userDb = new HashMap<>();
@@ -190,21 +187,21 @@ public class WhatsappRepository {
         // all the databases, and update relevant attributes accordingly.
         //If user is removed successfully, return (the updated number of users
         // in the group + the updated number of messages in group + the updated number of overall messages)
-        try {
-            String userName = user.getName();
-            String groupName = "";
-            boolean check = false;
-            for(String x:groupsDb.keySet()) {
-
-                List<User> users = groupsDb.get(x);
-                for (User user1 : users) {
-                    if (user1.getName().equals(userName)) {
-                        groupName = x;
-                        check = true;
-                        break;
-                    }
-                }
-            }
+//        try {
+//            String userName = user.getName();
+//            String groupName = "";
+//            boolean check = false;
+//            for(String x:groupsDb.keySet()) {
+//
+//                List<User> users = groupsDb.get(x);
+//                for (User user1 : users) {
+//                    if (user1.getName().equals(userName)) {
+//                        groupName = x;
+//                        check = true;
+//                        break;
+//                    }
+//                }
+//            }
 
 //            int i = 0;
 //            for (i = 0; i < groupsDb.size(); i++) {
@@ -218,61 +215,94 @@ public class WhatsappRepository {
 //                }
 //
 //            }
-            if (check == false) {
-                throw new Exception("User not found");
-            }
-            List<User> users = groupsDb.get(groupName);
-            String adminName = users.get(0).getName();
-            if (user.getName().equals(adminName)) {
-                throw new Exception("Cannot remove admin");
-            }
-            // get message list from usermsgdb and also find id of msgs
-            List<Message> messageList = usermsgDb.get(userName);
-            List<Integer> idList = new ArrayList<>();
-            for (Message message : messageList) {
-                idList.add(message.getId());
-            }
-            // removed from usermsgdb
-            usermsgDb.remove(userName);
-            // removed from msglist
-            for (int j = 0; j < idList.size(); j++) {
-                int id = idList.get(j);
-                for (int k = 0; k < messagesDb.size(); k++) {
-                    if (messagesDb.get(k).getId() == id) {
-                        messagesDb.remove(messagesDb.get(k));
-                    }
-                }
-            }
-
-            List<Message> messageList1 = groupMessageDb.get(groupName);
-
-            for (int k = 0; k < idList.size(); k++) {
-                int id = idList.get(k);
-                for (Message message : messageList1) {
-                    if (message.getId() == id) {
-                        messageList1.remove(message);
-                    }
-                }
-            }
-            List<User> userList = groupsDb.get(groupName);
-            for (User user1 : userList) {
-                if (user1.getName().equals(user.getName())) {
-                    userList.remove(user1);
-                }
-            }
-            int totalacount = 0;
-            totalacount += groupsDb.get(groupName).size() + groupMessageDb.get(groupName).size();
-            for(String grpname:groupMessageDb.keySet())
+//            if (check == false) {
+//                throw new Exception("User not found");
+//            }
+//            List<User> users = groupsDb.get(groupName);
+//            String adminName = users.get(0).getName();
+//            if (user.getName().equals(adminName)) {
+//                throw new Exception("Cannot remove admin");
+//            }
+//            // get message list from usermsgdb and also find id of msgs
+//            List<Message> messageList = usermsgDb.get(userName);
+//            List<Integer> idList = new ArrayList<>();
+//            for (Message message : messageList) {
+//                idList.add(message.getId());
+//            }
+//            // removed from usermsgdb
+//            usermsgDb.remove(userName);
+//            // removed from msglist
+//            for (int j = 0; j < idList.size(); j++) {
+//                int id = idList.get(j);
+//                for (int k = 0; k < messagesDb.size(); k++) {
+//                    if (messagesDb.get(k).getId() == id) {
+//                        messagesDb.remove(messagesDb.get(k));
+//                    }
+//                }
+//            }
+//
+//            List<Message> messageList1 = groupMessageDb.get(groupName);
+//
+//            for (int k = 0; k < idList.size(); k++) {
+//                int id = idList.get(k);
+//                for (Message message : messageList1) {
+//                    if (message.getId() == id) {
+//                        messageList1.remove(message);
+//                    }
+//                }
+//            }
+//            List<User> userList = groupsDb.get(groupName);
+//            for (User user1 : userList) {
+//                if (user1.getName().equals(user.getName())) {
+//                    userList.remove(user1);
+//                }
+//            }
+//            int totalacount = 0;
+//            totalacount += groupsDb.get(groupName).size() + groupMessageDb.get(groupName).size();
+//            for(String grpname:groupMessageDb.keySet())
+//            {
+//               totalacount+= groupMessageDb.get(grpname).size();
+//
+//            }
+//            return totalacount;
+//        }
+//        catch (Exception e)
+//        {
+//           return 0;
+//        }
+        boolean userFound = false;
+        int groupSize = 0;
+        int messageCount = 0;
+        int overallMessageCount = messagesDb.size();
+        String groupToRemoveFrom = "";
+        for (Map.Entry<String, List<User>> entry : groupsDb.entrySet()) {
+            List<User> groupUsers = entry.getValue();
+            if (groupUsers.contains(user))
             {
-               totalacount+= groupMessageDb.get(grpname).size();
-
+                userFound = true;
+                groupToRemoveFrom = entry.getKey();
+                if (groupUsers.get(0).equals(user))
+                {
+                    throw new Exception("Cannot remove admin");
+                }
+                groupUsers.remove(user);
+                groupSize = groupUsers.size();
+                break;
             }
-            return totalacount;
         }
-        catch (Exception e)
+        if (!userFound)
         {
-           return 0;
+            throw new Exception("User not found");
         }
+
+        if (usermsgDb.containsKey(user))
+        {
+            messageCount = usermsgDb.get(user).size() - 2;
+            usermsgDb.remove(user);
+        }
+
+
+        return groupSize + messageCount + overallMessageCount;
     }
     public String findMessage(Date start, Date end, int K) throws Exception{
         // This is a bonus problem and does not contains any marks
