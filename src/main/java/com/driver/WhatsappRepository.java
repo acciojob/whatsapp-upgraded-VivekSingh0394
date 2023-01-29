@@ -305,7 +305,7 @@ public class WhatsappRepository {
         }
 
 
-        return groupSize + messageCount + overallMessageCount;
+        return groupSize + messageCount + overallMessageCount-1;
     }
     public String findMessage(Date start, Date end, int K) throws Exception{
         // This is a bonus problem and does not contains any marks
