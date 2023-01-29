@@ -194,22 +194,34 @@ public class WhatsappRepository {
             String userName = user.getName();
             String groupName = "";
             boolean check = false;
-            int i = 0;
-            for (i = 0; i < groupsDb.size(); i++) {
-                List<User> userList = groupsDb.get(i);
-                for (User user1 : userList) {
-                    if (user1.getName().equals(userName)) {
+            for(String x:groupsDb.keySet()) {
 
+                List<User> users = groupsDb.get(x);
+                for (User user1 : users) {
+                    if (user1.getName().equals(userName)) {
+                        groupName = x;
                         check = true;
                         break;
                     }
                 }
-
             }
+
+//            int i = 0;
+//            for (i = 0; i < groupsDb.size(); i++) {
+//                List<User> userList = groupsDb.get(i);
+//                for (User user1 : userList) {
+//                    if (user1.getName().equals(userName)) {
+//
+//                        check = true;
+//                        break;
+//                    }
+//                }
+//
+//            }
             if (check == false) {
                 throw new Exception("User not found");
             }
-            List<User> users = groupsDb.get(i);
+            List<User> users = groupsDb.get(groupName);
             String adminName = users.get(0).getName();
             if (user.getName().equals(adminName)) {
                 throw new Exception("Cannot remove admin");
